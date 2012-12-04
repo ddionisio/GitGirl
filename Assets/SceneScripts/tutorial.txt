@@ -1,0 +1,239 @@
+{ "$type":"Sequencer"
+	"actions": [
+		{ "$type":"SceneActionActivateEntity",
+			"entityPath":"entities/player",
+			"activate":false
+		},
+		{ "$type":"SceneActionCamera",
+			"mode":"Attach",
+			"attachToPath":"entities/player"
+		},
+		{ "$type":"SceneActionAnnounce",
+			"delay":"1",
+			"state":"Blink",
+			"message":"TUTORIAL"
+		},
+		{ "$type":"SceneActionActivateEntity",
+			"entityPath":"entities/player",
+			"activate":true
+		},
+		
+		{ "$type":"SceneActionAnnounce", "delay":"2" },
+		
+		{ "$type":"SceneActionEntityAction",
+			"entityPath":"entities/player",
+			"action":"jump"
+		},
+		
+		{ "$type":"SceneActionWaitEntityAction",
+			"entityPath":"entities/player",
+			"action":"idle"
+		},
+		
+		{ "$type":"SceneActionActivateEntity",
+			"delay":"1",
+			"entityPath":"entities/player",
+			"activate":false
+		},
+				
+		{ "$type":"SceneActionOpenDialog",
+			"name":"Intergalactic Space Hair",
+			"portrait":"portrait_hair",
+			"texts":[
+				"Welcome!", 
+				"The objective of the game is to resolve conflicts.", 
+				"In order to do that, I must 'pull' these conflicts and resolve them by ingestion.",
+				"However...",
+				"A conflict must first be stunned.",
+				"There are several ways to stun a conflict."]
+		},
+		
+		{ "$type":"SceneActionCamera",
+			"delay":"1",
+			"mode":"Attach",
+			"attachToWaypoint":"spawner",
+			"immediate":false
+		},
+		
+		{ "$type":"SceneActionActivateEntityType",
+			"delay":"0.5",
+			"type":"EntitySpawnerSticky", "activate":true
+		},
+		
+		{ "$type":"SceneActionOpenDialog",
+			"name":"Intergalactic Space Hair",
+			"portrait":"portrait_hair",
+			"texts":[
+				"For the common conflicts, they must first be blasted by these twinkly-stars.",
+				"I must first pull one of these twinkly-stars from the branches and then push it towards a conflict.",
+				"Go ahead and pull a twinkly-star, and then push it."]
+		},
+		
+		{ "$type":"SceneActionCamera",
+			"mode":"Attach",
+			"attachToPath":"entities/player",
+			"immediate":false
+		},
+		
+		{ "$type":"SceneActionActivateEntity",
+			"entityPath":"entities/player",
+			"activate":true
+		},
+		
+		{ "$type":"SceneActionWaitPlayerThrow" },
+		
+		{ "$type":"SceneActionActivateEntity",
+			"delay":"1",
+			"entityPath":"entities/player",
+			"activate":false
+		},
+		
+		{ "$type":"SceneActionOpenDialog",
+			"name":"Intergalactic Space Hair",
+			"portrait":"portrait_hair",
+			"texts":[
+				"Awesome!",
+				"Now here comes a conflict!"]
+		},
+		
+		{ "$type":"SceneActionSpawnEntityNearPlayer", 
+			"delay":"1", 
+			"name":"steve",
+			"type":"jumper_tutorial", "x":"-150", "y":"0" 
+		},
+		
+		{ "$type":"SceneActionCamera",
+			"delay":"1", 
+			"mode":"Attach",
+			"attachToPath":"entities/enemies/steve",
+			"immediate":false
+		},		
+		
+		{ "$type":"SceneActionOpenDialog",
+			"delay":"1",
+			"name":"Intergalactic Space Hair",
+			"portrait":"portrait_hair",
+			"texts":[
+				"Pull another twinkly-star and push it towards that conflict.",
+				"Once it is hit by a twinkly-star, make sure I eat it before it revives.",
+				"His name is Steve by the way. He won't be missed."]
+		},
+		
+		{ "$type":"SceneActionOpenDialog",
+			"name":"Steve",
+			"portrait":"portrait_jumper",
+			"texts":[
+				"Bite me!"]
+		},
+		
+		{ "$type":"SceneActionCamera",
+			"mode":"Attach",
+			"attachToPath":"entities/player",
+			"immediate":false
+		},
+		
+		{ "$type":"SceneActionActivateEntity",
+			"entityPath":"entities/player",
+			"activate":true
+		},
+		
+		{ "$type":"SceneActionWaitEnemyCount", "delay":"0.5"},
+		
+		{ "$type":"SceneActionActivateEntity",
+			"entityPath":"entities/player",
+			"activate":false
+		},
+		
+		{ "$type":"SceneActionOpenDialog",
+			"delay":"1",
+			"name":"Intergalactic Space Hair",
+			"portrait":"portrait_hair",
+			"texts":[
+				"That hit the spot!",
+				"By the way...",
+				"If you have noticed, touching a conflict can hurt you. Causing a loss of heart.",
+				"Losing all of your heart will result in a terrible frustration.",
+				"Thus, there is a creature to help you replenish your heart."]
+		},
+		
+		{ "$type":"SceneActionSpawnEntityNearPlayer", 
+			"delay":"1", 
+			"name":"chesterton",
+			"type":"sirRobert", "x":"200", "y":"0" 
+		},
+		
+		{ "$type":"SceneActionCamera",
+			"delay":"1", 
+			"mode":"Attach",
+			"attachToPath":"entities/chesterton",
+			"immediate":false
+		},
+		
+		{ "$type":"SceneActionOpenDialog",
+			"delay":"1",
+			"name":"Intergalactic Space Hair",
+			"portrait":"portrait_hair",
+			"texts":[
+				"He goes by the name of Chesterton.",
+				"If your heart count reaches one, Chesterton will be able to provide you with another one.",
+				"Remember, only if you have one heart left."]
+		},
+		
+		{ "$type":"SceneActionCamera",
+			"mode":"Attach",
+			"attachToPath":"entities/player",
+			"immediate":false
+		},
+		
+		{ "$type":"SceneActionOpenDialog",
+			"delay":"1",
+			"name":"Intergalactic Space Hair",
+			"portrait":"portrait_hair",
+			"texts":[
+				"Let me demonstrate."]
+		},
+		
+		{ "$type":"SceneActionHurtEntity",
+			"entityPath":"entities/player",
+			"amount":"-1",
+			"action":"mad"
+		},
+		
+		{ "$type":"SceneActionOpenDialog",
+			"delay":"2",
+			"name":"Intergalactic Space Hair",
+			"portrait":"portrait_hair",
+			"texts":[
+				"Chesterton will begin to spawn a heart.",
+				"Once the heart is fully spawned, make sure to pull it."]
+		}
+		
+		{ "$type":"SceneActionEntityAction",
+			"entityPath":"entities/player",
+			"action":"idle"
+		},
+		
+		{ "$type":"SceneActionActivateEntity",
+			"entityPath":"entities/player",
+			"activate":true
+		},
+		
+		{ "$type":"SceneActionWaitEntityCounter",
+			"entityPath":"entities/chesterton",
+			"counter":"1"
+		},
+		
+		{ "$type":"SceneActionOpenDialog",
+			"delay":"1",
+			"name":"Intergalactic Space Hair",
+			"portrait":"portrait_hair",
+			"texts":[
+				"Excellent!",
+				"And that concludes the tutorial!",
+				"Go forth and resolve the conflicts that plague across the vast repositories of Git!",
+				"Become the beacon of hope!"]
+		},
+		
+		{ "$type":"SequencerActionChangeState", "delay":"1", "state":"victory" }
+	]
+}

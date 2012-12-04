@@ -1,0 +1,10 @@
+{ "$type":"Sequencer",
+	"loop":true,
+	"actions": [
+		{ "$type":"AIJump",
+			"delay":"1.5",
+			"speedMin":"160",
+			"speedMax":"240"
+		}
+	]
+}

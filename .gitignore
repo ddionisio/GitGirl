@@ -1,0 +1,11 @@
+*.unityproj
+*.userprefs
+*.csproj
+*.pidb
+*.sln
+/Assets/NGUI
+/Temp
+/Assets/TK2DROOT
+/Assets/NGUI.meta
+/Assets/TK2DROOT.meta
+/Library

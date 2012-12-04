@@ -1,0 +1,74 @@
+{ "$type":"Sequencer"
+	"actions": [
+		{ "$type":"SceneActionActivateEntity",
+			"entityPath":"entities/player",
+			"activate":false
+		},
+		{ "$type":"SceneActionCamera",
+			"mode":"Attach",
+			"attachToPath":"entities/player"
+		},
+		{ "$type":"SceneActionAnnounce",
+			"delay":"1",
+			"state":"Blink",
+			"message":"CONFLICTS DETECTED"
+		},
+		{ "$type":"SceneActionAnnounce",
+			"delay":"2",
+			"state":"Display",
+			"message":"ENTERING PLANET"
+		},
+		{ "$type":"SceneActionActivateEntity",
+			"entityPath":"entities/player",
+			"activate":true
+		},
+		{ "$type":"SceneActionAnnounce",
+			"delay":"2",
+			"state":"FadeScaleOut"
+		},
+		{ "$type":"SceneActionEntityAction",
+			"entityPath":"entities/player",
+			"action":"idle"
+		},
+		
+		
+		
+		{ "$type":"SceneActionNewWave", "delay":"2"},
+				
+		{ "$type":"SceneActionSpawnEntityNearPlayer", "delay":"1", "type":"walker_1", "x":"120", "y":"30" },
+		{ "$type":"SceneActionSpawnEntityNearPlayer", "delay":"2", "type":"walker_1", "x":"-120", "y":"30" },
+		
+		{ "$type":"SceneActionWaitEnemyCount", "delay":"0.5"},
+		
+		
+		
+		{ "$type":"SceneActionNewWave", "delay":"1"},
+		
+		{ "$type":"SceneActionSpawnEntityNearPlayer", "delay":"1", "type":"jumper_1", "x":"120", "y":"30" },
+		{ "$type":"SceneActionSpawnEntityNearPlayer", "delay":"2", "type":"jumper_1", "x":"-120", "y":"30" },
+		
+		{ "$type":"SceneActionWaitEnemyCount", "delay":"0.5"},
+		
+		
+		
+		{ "$type":"SceneActionNewWave", "delay":"1"},
+		
+		{ "$type":"SceneActionSpawnEntityNearPlayer", "delay":"1", "type":"walker_1", "x":"140", "y":"45" },
+		{ "$type":"SceneActionSpawnEntityNearPlayer", "delay":"0.5", "type":"walker_1", "x":"-140", "y":"45" },
+		{ "$type":"SceneActionSpawnEntityNearPlayer", "delay":"2", "type":"jumper_1", "x":"50", "y":"100" },
+		
+		{ "$type":"SceneActionWaitEnemyCount", "delay":"0.5"},
+		
+		
+		
+		{ "$type":"SceneActionNewWave", "delay":"1"},
+		
+		{ "$type":"SceneActionSpawnEntityNearPlayer", "delay":"1", "type":"walker_jumper_1", "x":"150", "y":"0" },
+		{ "$type":"SceneActionSpawnEntityNearPlayer", "delay":"1", "type":"walker_jumper_1", "x":"-150", "y":"0" },
+		
+		{ "$type":"SceneActionWaitEnemyCount", "delay":"0.5"},
+		
+		
+		{ "$type":"SequencerActionChangeState", "delay":"1", "state":"boss" }
+	]
+}

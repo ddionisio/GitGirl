@@ -1,0 +1,13 @@
+{ "$type":"Sequencer"
+	"actions": [
+		{ "$type":"SceneActionCamera",
+		
+			"mode":"Free"
+		},
+		{ "$type":"SceneActionCamera",
+		
+			"mode":"Attach",
+			"attachToPath":"entities/player"
+		}
+	]
+}

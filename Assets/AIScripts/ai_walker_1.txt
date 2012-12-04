@@ -1,0 +1,18 @@
+{ "$type":"Sequencer",
+	"loop":true,
+	"actions": [
+		{ "$type":"AISetDirToPlayer" },
+		{ "$type":"AISetVelocity",
+			"speedMin":"90",
+			"speedMax":"120",
+			"useDir":true
+		},
+		{ "$type":"AISetDirToPlayer", "delay":"2" },
+		{ "$type":"AISetVelocity",
+			"speedMin":"90",
+			"speedMax":"120",
+			"useDir":true
+		},
+		{ "$type":"SequencerAction", "delay":"2" }
+	]
+}
