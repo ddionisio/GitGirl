@@ -4,6 +4,8 @@ using System.Collections;
 public class PlayerController : MonoBehaviour {
 	public const int maxJump = 2;
 	
+	public float airControlAccel;
+	
 	private Player mPlayer;
 	
 	void OnDestroy() {
@@ -50,8 +52,11 @@ public class PlayerController : MonoBehaviour {
 				
 				planetAttach.velocity.x = xS*mPlayer.moveSpeed;
 			}
+			
+			planetAttach.accel = Vector2.zero;
 		}
-		
-		planetAttach.velocity.y = 0;
+		else {
+			planetAttach.accel.x = xS*airControlAccel;
+		}
 	}
 }

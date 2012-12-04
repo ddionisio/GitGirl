@@ -101,8 +101,13 @@ public class PlanetAttach : PlanetAttachStatic {
 		}
 		
 		if(maxVelocity > 0) {
-			if(velocity.y == 0 && velocity.x > maxVelocity) {
-				velocity.x = maxVelocity;
+			if(velocity.y == 0) {
+				if(velocity.x > maxVelocity) {
+					velocity.x = maxVelocity;
+				}
+				else if(velocity.x < -maxVelocity) {
+					velocity.x = -maxVelocity;
+				}
 			}
 			else if(velocity.sqrMagnitude > mMaxVelocitySq) {
 				velocity.Normalize();

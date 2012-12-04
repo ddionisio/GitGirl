@@ -171,7 +171,7 @@ public class Player : Entity, Entity.IListener {
 				mController.enabled = true;
 			}
 			
-			planetAttach.velocity = Vector2.zero;
+			planetAttach.accel = planetAttach.velocity = Vector2.zero;
 			break;
 			
 		case Action.hurt:
