@@ -23,8 +23,8 @@ public class Planet : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
-		Main.instance.cameraController.originMinDistance = cameraDistanceLimit;
-		Main.instance.cameraController.origin = transform;
+		CameraController.instance.originMinDistance = cameraDistanceLimit;
+		CameraController.instance.origin = transform;
 	}
 	
 	// Update is called once per frame

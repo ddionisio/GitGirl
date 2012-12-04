@@ -38,6 +38,11 @@ public class PlanetAttach : PlanetAttachStatic {
 		return mYVel;
 	}
 	
+	//set velocity and accel to 0
+	public void ResetMotion() {
+		accel = velocity = Vector2.zero;
+	}
+	
 	//fake physics
 	public void Jump(float vel, bool incJumpCounter=true) {
 		mIsGround = false;

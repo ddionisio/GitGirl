@@ -64,9 +64,9 @@ public class Player : Entity, Entity.IListener {
 			planetAttach.planetPos = mCheckPoint.playerPlanetPos;
 			transform.position = planetAttach.planet.ConvertToWorldPos(mCheckPoint.playerPlanetPos);
 			
-			Main.instance.cameraController.attach = transform;
-			Main.instance.cameraController.mode = CameraController.Mode.Attach;
-			Main.instance.cameraController.CancelMove();
+			CameraController.instance.attach = transform;
+			CameraController.instance.mode = CameraController.Mode.Attach;
+			CameraController.instance.CancelMove();
 			
 			mCheckPoint = null;
 		}
@@ -171,7 +171,7 @@ public class Player : Entity, Entity.IListener {
 				mController.enabled = true;
 			}
 			
-			planetAttach.accel = planetAttach.velocity = Vector2.zero;
+			planetAttach.ResetMotion();
 			break;
 			
 		case Action.hurt:
@@ -192,7 +192,7 @@ public class Player : Entity, Entity.IListener {
 	
 	void _SetActionDisablePlayer() {
 		mPlayerCurTime = 0.0f;
-		planetAttach.velocity = Vector2.zero;
+		planetAttach.ResetMotion();
 		mController.enabled = false;
 	}
 	
@@ -212,7 +212,7 @@ public class Player : Entity, Entity.IListener {
 				//dead!
 				action = Entity.Action.die;
 				
-				planetAttach.velocity = Vector2.zero;
+				planetAttach.ResetMotion();
 			}
 			else {
 				//get hurt

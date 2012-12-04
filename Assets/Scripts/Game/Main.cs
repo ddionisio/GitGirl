@@ -25,7 +25,6 @@ public class Main : MonoBehaviour {
 	
 	public TextAsset stringAsset;
 	
-	[System.NonSerialized] public CameraController cameraController;
 	[System.NonSerialized] public UserSettings userSettings;
 	[System.NonSerialized] public UserData userData;
 	[System.NonSerialized] public SceneManager sceneManager;
@@ -90,8 +89,6 @@ public class Main : MonoBehaviour {
 		
 		userData = GetComponentInChildren<UserData>();
 		userSettings = GetComponentInChildren<UserSettings>();
-		
-		cameraController = GetComponentInChildren<CameraController>();
 		
 		sceneManager = GetComponentInChildren<SceneManager>();
 		reticleManager = GetComponentInChildren<ReticleManager>();

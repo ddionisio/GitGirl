@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
+//make sure to set the game object tag to MainCamera
 public class CameraController : MonoBehaviour {
 	public enum Mode {
 		Free,
@@ -8,6 +9,8 @@ public class CameraController : MonoBehaviour {
 	}
 	
 	public float moveDelay = 0.0f;
+	
+	private static CameraController mInstance = null;
 	
 	private Mode mCurMode = Mode.Free;
 	
@@ -27,6 +30,12 @@ public class CameraController : MonoBehaviour {
 	//public Anchor.Type anchor = Anchor.Type.BottomLeft;
 	
 	//private tk2dCamera mTKCamera;
+	
+	public static CameraController instance {
+		get {
+			return mInstance;
+		}
+	}
 	
 	public Transform origin {
 		get {
@@ -97,7 +106,12 @@ public class CameraController : MonoBehaviour {
 		Reset();
 	}
 	
+	void OnDestroy() {
+		mInstance = null;
+	}
+	
 	void Awake() {
+		mInstance = this;
 		//mTKCamera = mCamera.GetComponent<tk2dCamera>();
 	}
 

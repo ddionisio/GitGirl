@@ -1,5 +1,9 @@
 { "$type":"Sequencer"
 	"actions": [
+		{ "$type":"SceneActionEntityAction",
+			"entityPath":"entities/player",
+			"action":"idle"
+		},
 		{ "$type":"SceneActionCamera",
 			"mode":"Attach",
 			"attachToPath":"entities/player"

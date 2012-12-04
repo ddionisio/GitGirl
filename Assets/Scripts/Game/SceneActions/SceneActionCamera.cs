@@ -9,12 +9,12 @@ public class SceneActionCamera : SequencerAction {
 	public bool waitFinish=true;
 	
 	public override void Start(MonoBehaviour behaviour, Sequencer.StateInstance state) {
-		Main.instance.cameraController.mode = mode;
+		CameraController.instance.mode = mode;
 		
 		if(attachToPath.Length > 0) {
 			GameObject go = ((SceneController)behaviour).SearchObject(attachToPath);
 			if(go != null) {
-				Main.instance.cameraController.attach = go.transform;
+				CameraController.instance.attach = go.transform;
 			}
 			else {
 				Debug.LogWarning("Path not found: "+attachToPath);
@@ -23,7 +23,7 @@ public class SceneActionCamera : SequencerAction {
 		else if(attachToWaypoint.Length > 0) {
 			Transform t = WaypointManager.instance.GetWaypoint(attachToWaypoint);
 			if(t != null) {
-				Main.instance.cameraController.attach = t;
+				CameraController.instance.attach = t;
 			}
 			else {
 				Debug.LogWarning("Can't find waypoint: "+attachToWaypoint);
@@ -31,11 +31,11 @@ public class SceneActionCamera : SequencerAction {
 		}
 		
 		if(immediate) {
-			Main.instance.cameraController.CancelMove();
+			CameraController.instance.CancelMove();
 		}
 	}
 	
 	public override bool Update(MonoBehaviour behaviour, Sequencer.StateInstance state) {
-		return immediate || !waitFinish || Main.instance.cameraController.isMoveFinish;
+		return immediate || !waitFinish || CameraController.instance.isMoveFinish;
 	}
 }
