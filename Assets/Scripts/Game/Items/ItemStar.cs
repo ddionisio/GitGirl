@@ -33,6 +33,8 @@ public class ItemStar : Entity, Entity.IListener {
 		
 	public bool resetMovementOnSpawn = true;
 	
+	public bool isAmmo = false;
+	
 	private bool mFadeEnabled = false;
 	
 	private int mCurBounce = 0;
@@ -48,6 +50,8 @@ public class ItemStar : Entity, Entity.IListener {
 	private bool mPlanetEnabledInitial = false;
 	
 	private bool mSceneActive = true;
+	
+	private bool mWeaponPrep = false;
 	
 	public bool fadeEnabled {
 		get {
@@ -70,85 +74,20 @@ public class ItemStar : Entity, Entity.IListener {
 	protected override void OnEnable() {
 		base.OnEnable();
 	}
-		
-	public void OnEntityAct(Action act) {
-		switch(act) {
-		case Action.spawning:
-			fadeEnabled = false;
-			
-			starSprite.scale = Vector3.one;
-			starSprite.color = Color.white;
-			starSprite.Play(starIdleClip);
-			
-			glowSprite.scale = Vector3.one;
-			glowSprite.color = Color.white;
-			
-			mCurBounce = 0;
-			
-			mLifeState = LifeState.None;
-			
-			planetAttach.enabled = mPlanetEnabledInitial;
-			planetAttach.applyOrientation = true;
-			planetAttach.applyGravity = false;
-			gameObject.layer = Main.layerItem;
-			mCollideLayerMask = 0;
-			mReticle = Reticle.Type.Grab;
-			
-			if(resetMovementOnSpawn) {
-				planetAttach.velocity = Vector2.zero;
-				planetAttach.accel = Vector2.zero;
-				planetAttach.ResetCurYVel();
-			}
-			
-			mCurPulseTime = 0;
-			break;
-		}
-	}
 	
-	public void OnEntitySpawnFinish() {
-		mLifeState = LifeState.Active;
-		action = Entity.Action.idle;
-	}
-	
-	void OnGrabStart(PlayerGrabber grabber) {
-		starSprite.color = Color.white;
-		
-		mLifeState = LifeState.Grabbed;
-		planetAttach.enabled = false;
-		fadeEnabled = false;
-		mCurBounce = 0;
-		InvulnerableOff();
-	}
-	
-	void OnGrabDone(PlayerGrabber grabber) {
-		Vector3 pos = transform.localPosition;
-		pos.z = 0.0f;
-		transform.localPosition = pos;
-		
-		starSprite.scale = new Vector3(grabScale, grabScale, starSprite.scale.z);
-		
-		glowSprite.scale = new Vector3(grabScale, grabScale, glowSprite.scale.z);
-		
-		grabber.Retract(true);
-	}
-	
-	void OnGrabRetractStart(PlayerGrabber grabber) {
-		//call proper state as 'grabbed'
-	}
-	
-	void OnGrabRetractEnd(PlayerGrabber grabber) {
-		//get eaten
-	}
-	
-	void OnGrabDetach(PlayerGrabber grabber) {
-		//put back in the world
+	void _PutInWorld() {
 		transform.parent = EntityManager.instance.transform;
 		
 		planetAttach.enabled = true;
 		planetAttach.applyGravity = true;
 	}
 	
-	void OnGrabThrow(PlayerGrabber grabber) {
+	//use by weapon star and grab throw
+	public void Throw(PlayerGrabber grabber, bool putInWorld) {
+		if(putInWorld) {
+			_PutInWorld();
+		}
+		
 		mLifeState = LifeState.Thrown;
 		
 		fadeEnabled = true;
@@ -171,6 +110,119 @@ public class ItemStar : Entity, Entity.IListener {
 		}
 		
 		planetAttach.velocity = throwVel;
+	}
+	
+	//use by weapon star and grab start
+	public void WeaponPrep() {
+		if(action == Entity.Action.idle) {
+			_Start();
+			_Prep();
+		}
+		else {
+			mWeaponPrep = true;
+		}
+	}
+	
+	private void _Start() {
+		starSprite.color = Color.white;
+		
+		mLifeState = LifeState.Grabbed;
+		planetAttach.enabled = false;
+		fadeEnabled = false;
+		mCurBounce = 0;
+		InvulnerableOff();
+	}
+	
+	private void _Prep() {
+		Vector3 pos = transform.localPosition;
+		pos.z = 0.0f;
+		transform.localPosition = pos;
+		
+		starSprite.scale = new Vector3(grabScale, grabScale, starSprite.scale.z);
+		
+		glowSprite.scale = new Vector3(grabScale, grabScale, glowSprite.scale.z);
+	}
+		
+	public void OnEntityAct(Action act) {
+		switch(act) {
+		case Action.spawning:
+			fadeEnabled = false;
+			
+			starSprite.scale = Vector3.one;
+			starSprite.color = Color.white;
+			starSprite.Play(starIdleClip);
+			
+			glowSprite.scale = Vector3.one;
+			glowSprite.color = Color.white;
+			
+			mCurBounce = 0;
+			
+			mLifeState = LifeState.None;
+			
+			planetAttach.enabled = mPlanetEnabledInitial;
+			planetAttach.applyOrientation = true;
+			planetAttach.applyGravity = false;
+			
+			mCollideLayerMask = 0;
+						
+			if(isAmmo) {
+				gameObject.layer = Main.layerIgnoreRaycast;
+				mReticle = Reticle.Type.NumType;
+			}
+			else {
+				gameObject.layer = Main.layerItem;
+				mReticle = Reticle.Type.Grab;
+			}
+			
+			if(resetMovementOnSpawn) {
+				planetAttach.velocity = Vector2.zero;
+				planetAttach.accel = Vector2.zero;
+				planetAttach.ResetCurYVel();
+			}
+			
+			mCurPulseTime = 0;
+			break;
+		}
+	}
+	
+	public void OnEntitySpawnFinish() {
+		if(mWeaponPrep) {
+			mWeaponPrep = false;
+			
+			_Start();
+			_Prep();
+		}
+		else {
+			mLifeState = LifeState.Active;
+		}
+		
+		action = Entity.Action.idle;
+	}
+			
+	void OnGrabStart(PlayerGrabber grabber) {
+		_Start();
+	}
+	
+	void OnGrabDone(PlayerGrabber grabber) {
+		_Prep();
+		grabber.Retract(true);
+	}
+	
+	void OnGrabRetractStart(PlayerGrabber grabber) {
+		//call proper state as 'grabbed'
+	}
+	
+	void OnGrabRetractEnd(PlayerGrabber grabber) {
+		//get eaten
+	}
+	
+	void OnGrabDetach(PlayerGrabber grabber) {
+		//put back in the world
+		_PutInWorld();
+	}
+	
+	void OnGrabThrow(PlayerGrabber grabber) {
+		Throw(grabber, false);
 	}
 	
 	void OnPlanetLand(PlanetAttach pa) {
@@ -257,7 +309,8 @@ public class ItemStar : Entity, Entity.IListener {
 				mLifeState = LifeState.None;
 				
 				planetAttach.enabled = mPlanetEnabledInitial;
-				EntityManager.instance.Release(transform);
+				
+				Release();
 			}
 			
 			mCurBlinkTime += Time.deltaTime;

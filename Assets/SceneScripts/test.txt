@@ -1,6 +1,7 @@
 { "$type":"Sequencer"
 	"actions": [
 		{ "$type":"SceneActionEntityAction",
+			"delay":"0.1",
 			"entityPath":"entities/player",
 			"action":"idle"
 		},

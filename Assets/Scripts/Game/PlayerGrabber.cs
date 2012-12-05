@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class PlayerGrabber : MonoBehaviour {
+public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 	public enum State {
 		None,
 		Grabbing,
@@ -20,6 +20,7 @@ public class PlayerGrabber : MonoBehaviour {
 	public string headClipGrab;
 	public string headClipHold;
 	public string headClipThrow;
+	public string headClipFireHold;
 	
 	public Transform neck;
 	
@@ -30,8 +31,10 @@ public class PlayerGrabber : MonoBehaviour {
 	public float grabLenOfs = 0.0f;
 	public float grabDelay = 0.15f;
 	
+	public Weapon[] weapons;
+	
 	//cache
-	public int mLayerMasksGrab;
+	private int mLayerMasksGrab;
 	
 	private Player mPlayer;
 	private tk2dAnimatedSprite mHeadSprite;
@@ -52,10 +55,13 @@ public class PlayerGrabber : MonoBehaviour {
 	
 	private int mHeadClipIdleId;
 	private int mHeadClipGrabId;
-	public int mHeadClipHoldId;
-	public int mHeadClipThrowId;
+	private int mHeadClipHoldId;
+	private int mHeadClipThrowId;
+	private int mHeadClipFireHoldId;
 	
 	private Reticle mReticleCheck;
+	
+	private Weapon mCurWeapon = null;
 	
 	public State state {
 		get {
@@ -69,10 +75,49 @@ public class PlayerGrabber : MonoBehaviour {
 		}
 	}
 	
+	//call within function OnGrabDone if you want to keep the target
 	public void Retract(bool attachGrabbedTarget) {
 		mRetractIsAttached = attachGrabbedTarget;
 		SwitchState(State.Retracting);
 	}
+	
+	public void Equip(Weapon.Type type) {
+		Expel(); //just in case
+		
+		if(type != Weapon.Type.NumTypes) {
+			mCurWeapon = weapons[(int)type];
+			mCurWeapon.Equip();
+		}
+	}
+	
+	//expel current weapon
+	public void Expel() {
+		if(mCurWeapon != null) { 
+			mCurWeapon.Expel();
+			mCurWeapon.gameObject.SetActiveRecursively(false);
+			mCurWeapon = null;
+		}
+		
+		PlayAnimIdle();
+	}
+	
+	public void PlayAnimThrow() {
+		mHeadSprite.Play(mHeadClipThrowId);
+	}
+	
+	public void PlayAnimFireHold() {
+		mHeadSprite.Play(mHeadClipFireHoldId);
+	}
+	
+	public void PlayAnimIdle() {
+		if(mGrabTarget == null && mCurWeapon == null) {
+			mHeadSprite.Play(mHeadClipIdleId);
+		}
+		else {
+			mHeadSprite.Play(mHeadClipHoldId);
+		}
+	}
+	
 	
 	//
 	//
@@ -100,6 +145,21 @@ public class PlayerGrabber : MonoBehaviour {
 		return ret;
 	}
 	
+	
+	
+	void HeadAnimComplete(tk2dAnimatedSprite sprite, int clipId) {
+		if(clipId == mHeadClipThrowId) {
+			PlayAnimIdle();
+		}
+	}
+	
+	void OnEnable() {
+		foreach(Weapon weapon in weapons) {
+			if(weapon != mCurWeapon) {
+			}
+		}
+	}
+	
 	void Awake() {
 		mPlayer = player.GetComponent<Player>();
 		
@@ -108,8 +168,16 @@ public class PlayerGrabber : MonoBehaviour {
 		mHeadClipGrabId = mHeadSprite.GetClipIdByName(headClipGrab);
 		mHeadClipHoldId = mHeadSprite.GetClipIdByName(headClipHold);
 		mHeadClipThrowId = mHeadSprite.GetClipIdByName(headClipThrow);
+		mHeadClipFireHoldId = mHeadSprite.GetClipIdByName(headClipFireHold);
+		
+		mHeadSprite.animationCompleteDelegate = HeadAnimComplete;
 		
 		mNeckSprite = neck.GetComponent<tk2dSprite>();
+		
+		foreach(Weapon weapon in weapons) {
+			weapon.Init(this);
+			weapon.gameObject.SetActiveRecursively(false);
+		}
 	}
 		
 	// Use this for initialization
@@ -184,11 +252,19 @@ public class PlayerGrabber : MonoBehaviour {
 		}
 	}
 	
+	bool CheckButtonDown() {
+		return !(mDisable || mSceneDisable) && Input.GetButtonDown("Fire1");
+	}
+	
+	bool CheckButtonUp() {
+		return !(mDisable || mSceneDisable) && Input.GetButtonUp("Fire1");
+	}
+	
 	void GrabThrow() {
-		if(!(mDisable || mSceneDisable) && Input.GetButtonDown("Fire1")) {
+		if(CheckButtonDown()) {
 			Transform t = DetachGrab();
 			
-			mHeadSprite.Play(mHeadClipThrowId);
+			PlayAnimThrow();
 			
 			mPlayer.OnGrabThrow();
 			t.SendMessage("OnGrabThrow", this, SendMessageOptions.DontRequireReceiver);
@@ -196,7 +272,7 @@ public class PlayerGrabber : MonoBehaviour {
 	}
 	
 	void GrabFromMouse() {
-		if(!(mDisable || mSceneDisable) && Input.GetButtonDown("Fire1")) {
+		if(CheckButtonDown()) {
 			Main main = Main.instance;
 			Transform target = main.reticleManager.GetTarget();
 			if(target != null) {
@@ -255,7 +331,7 @@ public class PlayerGrabber : MonoBehaviour {
 		
 		switch(newState) {
 		case State.None:
-			mHeadSprite.Play(mHeadClipIdleId);
+			PlayAnimIdle();
 			break;
 			
 		case State.Grabbing:
@@ -327,20 +403,22 @@ public class PlayerGrabber : MonoBehaviour {
 		case State.None:
 			LookAtMouse();
 			
-			if(mGrabTarget == null) {
-				if(!(mHeadSprite.clipId == mHeadClipIdleId || mHeadSprite.clipId == mHeadClipThrowId)) {
-					mHeadSprite.Play(mHeadClipIdleId);
-				}
-				
+			if(mGrabTarget == null && mCurWeapon == null) {
 				RefreshReticles();
 				GrabFromMouse();
 			}
 			else {
-				if(mHeadSprite.clipId != mHeadClipHoldId) {
-					mHeadSprite.Play(mHeadClipHoldId);
+				if(mCurWeapon != null) {
+					if(CheckButtonDown()) {
+						mCurWeapon.Fire(true);
+					}
+					else if(CheckButtonUp()) {
+						mCurWeapon.Fire(false);
+					}
 				}
-				
-				GrabThrow();
+				else {
+					GrabThrow();
+				}
 			}
 			break;
 			
@@ -362,20 +440,53 @@ public class PlayerGrabber : MonoBehaviour {
 		}
 	}
 	
-	void OnPlayerDeath() {
-		neck.gameObject.SetActiveRecursively(false);
-		head.gameObject.SetActiveRecursively(false);
-	}
-	
 	void OnUIModalActive() {
 		mDisable = true;
 	}
 	
 	void OnUIModalInactive() {
 		mDisable = false;
+		
+		if(mCurWeapon != null) {
+			mCurWeapon.Fire(false);
+		}
 	}
 	
 	void OnSceneActivate(bool activate) {
 		mSceneDisable = !activate;
+		
+		if(mCurWeapon != null && !activate) {
+			mCurWeapon.Fire(false);
+		}
+	}
+	
+	//entity listener
+	
+	public void OnEntityAct(Entity.Action act) {
+		if(thePlayer.prevAction == Entity.Action.start) {
+			head.gameObject.active = true;
+			headAttach.gameObject.SetActiveRecursively(true);
+		}
+		
+		switch(act) {
+		case Entity.Action.start:
+			head.gameObject.active = false;
+			headAttach.gameObject.SetActiveRecursively(false);
+			break;
+			
+		case Entity.Action.die:
+			neck.gameObject.SetActiveRecursively(false);
+			head.gameObject.SetActiveRecursively(false);
+			break;
+		}
+	}
+	
+	public void OnEntityInvulnerable(bool yes) {
+	}
+	
+	public void OnEntityCollide(Entity other, bool youAreReceiver) {
+	}
+	
+	public void OnEntitySpawnFinish() {
 	}
 }

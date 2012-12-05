@@ -20,8 +20,6 @@ public class Player : Entity, Entity.IListener {
 	
 	public float deathDelay = 2.0f; //delay to bring game over menu up
 	
-	public Transform head;
-	
 	public ThrowCallback throwCallback=null;
 	
 	private PlayerController mController;
@@ -155,13 +153,8 @@ public class Player : Entity, Entity.IListener {
 	}
 	
 	public void OnEntityAct(Action act) {
-		if(prevAction == Entity.Action.start) {
-			head.gameObject.SetActiveRecursively(true);
-		}
-		
 		switch(act) {
 		case Action.start:
-			head.gameObject.SetActiveRecursively(false);
 			break;
 			
 		case Action.idle:
@@ -181,7 +174,6 @@ public class Player : Entity, Entity.IListener {
 			
 		case Action.die:
 			_SetActionDisablePlayer();
-			BroadcastMessage("OnPlayerDeath", null, SendMessageOptions.DontRequireReceiver);
 			break;
 			
 		case Action.victory:
