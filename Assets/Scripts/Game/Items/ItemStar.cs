@@ -8,7 +8,8 @@ public class ItemStar : Entity, Entity.IListener {
 		Active,
 		Grabbed,
 		Thrown,
-		Dying
+		Dying,
+		Refreshing
 	}
 			
 	public tk2dAnimatedSprite starSprite;
@@ -63,32 +64,13 @@ public class ItemStar : Entity, Entity.IListener {
 		}
 	}
 	
-	protected override void Awake() {
-		base.Awake();
-		
-		mPlanetEnabledInitial = planetAttach.enabled;
-		
-		mGlowPulseMinAlpha = ((float)glowPulseMinAlpha)/255.0f;
-	}
-	
-	protected override void OnEnable() {
-		base.OnEnable();
-	}
-	
-	void _PutInWorld() {
-		transform.parent = EntityManager.instance.transform;
-		
-		planetAttach.enabled = true;
-		planetAttach.applyGravity = true;
-	}
-	
 	//use by weapon star and grab throw
 	public void Throw(PlayerGrabber grabber, bool putInWorld) {
 		if(putInWorld) {
 			_PutInWorld();
 		}
 		
-		mLifeState = LifeState.Thrown;
+		SetState(LifeState.Thrown);
 		
 		fadeEnabled = true;
 		
@@ -123,6 +105,32 @@ public class ItemStar : Entity, Entity.IListener {
 		}
 	}
 	
+	//visual for when refreshing weapon before firing
+	public void WeaponRefresh() {
+		SetState(LifeState.Refreshing);
+	}
+	
+	//internal
+	
+	protected override void Awake() {
+		base.Awake();
+		
+		mPlanetEnabledInitial = planetAttach.enabled;
+		
+		mGlowPulseMinAlpha = ((float)glowPulseMinAlpha)/255.0f;
+	}
+	
+	protected override void OnEnable() {
+		base.OnEnable();
+	}
+	
+	void _PutInWorld() {
+		transform.parent = EntityManager.instance.transform;
+		
+		planetAttach.enabled = true;
+		planetAttach.applyGravity = true;
+	}
+		
 	private void _Start() {
 		starSprite.color = Color.white;
 		
@@ -157,7 +165,7 @@ public class ItemStar : Entity, Entity.IListener {
 			
 			mCurBounce = 0;
 			
-			mLifeState = LifeState.None;
+			SetState(LifeState.None);
 			
 			planetAttach.enabled = mPlanetEnabledInitial;
 			planetAttach.applyOrientation = true;
@@ -193,7 +201,7 @@ public class ItemStar : Entity, Entity.IListener {
 			_Prep();
 		}
 		else {
-			mLifeState = LifeState.Active;
+			SetState(LifeState.Active);
 		}
 		
 		action = Entity.Action.idle;
@@ -252,21 +260,34 @@ public class ItemStar : Entity, Entity.IListener {
 		}
 	}
 	
-	void Die() {
+	void SetState(LifeState state) {
 		mCurFadeTime = 0;
-		gameObject.layer = Main.layerIgnoreRaycast;
-		mReticle = Reticle.Type.NumType;
-		mLifeState = LifeState.Dying;
+		
+		mLifeState = state;
+		
+		switch(state) {
+		case LifeState.None:
+			break;
+		case LifeState.Active:
+			break;
+		case LifeState.Grabbed:
+			break;
+		case LifeState.Thrown:
+			break;
+		case LifeState.Dying:
+			gameObject.layer = Main.layerIgnoreRaycast;
+			mReticle = Reticle.Type.NumType;
+			break;
+		case LifeState.Refreshing:
+			break;
+		}
 	}
 	
 	void Decay(float delay) {
 		if(mFadeEnabled) {
 			mCurFadeTime += Time.deltaTime;
 			if(mCurFadeTime >= delay || mCurBounce >= numBounce) {
-				mCurFadeTime = 0;
-				gameObject.layer = Main.layerIgnoreRaycast;
-				mReticle = Reticle.Type.NumType;
-				mLifeState = LifeState.Dying;
+				SetState(LifeState.Dying);
 			}
 		}
 	}
@@ -282,6 +303,19 @@ public class ItemStar : Entity, Entity.IListener {
 		glowSprite.color = c;
 	}
 	
+	void Blink() {
+		mCurBlinkTime += Time.deltaTime;
+		if(mCurBlinkTime >= disappearBlinkDelay) {
+			mCurBlinkTime = 0.0f;
+			
+			Color c = starSprite.color;
+			c.a = c.a == 1.0f ? 0.0f : 1.0f;
+			
+			starSprite.color = c;
+			glowSprite.color = c;
+		}
+	}
+	
 	void LateUpdate () {
 		switch(mLifeState) {
 		case LifeState.Active:
@@ -290,7 +324,7 @@ public class ItemStar : Entity, Entity.IListener {
 				PulseGlow();
 			}
 			else {
-				Die();
+				SetState(LifeState.Dying);
 			}
 			break;
 			
@@ -306,23 +340,18 @@ public class ItemStar : Entity, Entity.IListener {
 		case LifeState.Dying:
 			mCurFadeTime += Time.deltaTime;
 			if(mCurFadeTime >= dyingDelay) {
-				mLifeState = LifeState.None;
+				SetState(LifeState.None);
 				
 				planetAttach.enabled = mPlanetEnabledInitial;
 				
 				Release();
 			}
 			
-			mCurBlinkTime += Time.deltaTime;
-			if(mCurBlinkTime >= disappearBlinkDelay) {
-				mCurBlinkTime = 0.0f;
-				
-				Color c = starSprite.color;
-				c.a = c.a == 1.0f ? 0.0f : 1.0f;
-				
-				starSprite.color = c;
-				glowSprite.color = c;
-			}
+			Blink();
+			break;
+			
+		case LifeState.Refreshing:
+			Blink();
 			break;
 		}
 	}
@@ -334,7 +363,7 @@ public class ItemStar : Entity, Entity.IListener {
 			switch(mLifeState) {
 			case LifeState.None:
 			case LifeState.Active:
-				Die();
+				SetState(LifeState.Dying);
 				break;
 			}
 		}

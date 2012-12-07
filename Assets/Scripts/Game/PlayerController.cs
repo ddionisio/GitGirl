@@ -7,13 +7,11 @@ public class PlayerController : MonoBehaviour {
 	public float airControlAccel;
 	
 	private Player mPlayer;
-	
-	void OnDestroy() {
-		mPlayer = null;
-	}
+	private PlayerGrabber mGrabber;
 	
 	void Awake() {
 		mPlayer = GetComponent<Player>();
+		mGrabber = GetComponent<PlayerGrabber>();
 	}
 	
 	void Update() {
@@ -57,6 +55,16 @@ public class PlayerController : MonoBehaviour {
 		}
 		else {
 			planetAttach.accel.x = xS*airControlAccel;
+		}
+		
+		if(Input.GetButtonDown("Fire")) {
+			mGrabber.Fire(true);
+		}
+		else if(Input.GetButtonUp("Fire")) {
+			mGrabber.Fire(false);
+		}
+		else if(Input.GetButtonDown("Expel")) {
+			mGrabber.Expel();
 		}
 	}
 }

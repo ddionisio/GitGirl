@@ -50,9 +50,6 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 	private bool mRetractIsAttached;
 	private Vector3 mGrabDest;
 	
-	private bool mDisable = false;
-	private bool mSceneDisable = false;
-	
 	private int mHeadClipIdleId;
 	private int mHeadClipGrabId;
 	private int mHeadClipHoldId;
@@ -86,6 +83,7 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 		
 		if(type != Weapon.Type.NumTypes) {
 			mCurWeapon = weapons[(int)type];
+			mCurWeapon.gameObject.SetActiveRecursively(true);
 			mCurWeapon.Equip();
 		}
 	}
@@ -96,9 +94,28 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 			mCurWeapon.Expel();
 			mCurWeapon.gameObject.SetActiveRecursively(false);
 			mCurWeapon = null;
+			
+			PlayAnimIdle();
 		}
-		
-		PlayAnimIdle();
+	}
+	
+	//do something
+	public void Fire(bool down) {
+		if(mCurState == State.None) {
+			if(mCurWeapon != null) {
+				mCurWeapon.Fire(down);
+			}
+			else if(mGrabTarget != null) {
+				if(down) {
+					GrabThrow();
+				}
+			}
+			else {
+				if(down) {
+					GrabFromMouse();
+				}
+			}
+		}
 	}
 	
 	public void PlayAnimThrow() {
@@ -251,35 +268,23 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 			mReticleCheck=null;
 		}
 	}
-	
-	bool CheckButtonDown() {
-		return !(mDisable || mSceneDisable) && Input.GetButtonDown("Fire1");
-	}
-	
-	bool CheckButtonUp() {
-		return !(mDisable || mSceneDisable) && Input.GetButtonUp("Fire1");
-	}
-	
+		
 	void GrabThrow() {
-		if(CheckButtonDown()) {
-			Transform t = DetachGrab();
-			
-			PlayAnimThrow();
-			
-			mPlayer.OnGrabThrow();
-			t.SendMessage("OnGrabThrow", this, SendMessageOptions.DontRequireReceiver);
-		}
+		Transform t = DetachGrab();
+		
+		PlayAnimThrow();
+		
+		mPlayer.OnGrabThrow();
+		t.SendMessage("OnGrabThrow", this, SendMessageOptions.DontRequireReceiver);
 	}
 	
 	void GrabFromMouse() {
-		if(CheckButtonDown()) {
-			Main main = Main.instance;
-			Transform target = main.reticleManager.GetTarget();
-			if(target != null) {
-				Main.instance.reticleManager.DeactivateAll();
-				mGrabTarget = target;
-				SwitchState(State.Grabbing);
-			}
+		Main main = Main.instance;
+		Transform target = main.reticleManager.GetTarget();
+		if(target != null) {
+			Main.instance.reticleManager.DeactivateAll();
+			mGrabTarget = target;
+			SwitchState(State.Grabbing);
 		}
 	}
 	
@@ -405,20 +410,6 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 			
 			if(mGrabTarget == null && mCurWeapon == null) {
 				RefreshReticles();
-				GrabFromMouse();
-			}
-			else {
-				if(mCurWeapon != null) {
-					if(CheckButtonDown()) {
-						mCurWeapon.Fire(true);
-					}
-					else if(CheckButtonUp()) {
-						mCurWeapon.Fire(false);
-					}
-				}
-				else {
-					GrabThrow();
-				}
 			}
 			break;
 			
@@ -441,20 +432,15 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 	}
 	
 	void OnUIModalActive() {
-		mDisable = true;
 	}
 	
 	void OnUIModalInactive() {
-		mDisable = false;
-		
 		if(mCurWeapon != null) {
 			mCurWeapon.Fire(false);
 		}
 	}
 	
 	void OnSceneActivate(bool activate) {
-		mSceneDisable = !activate;
-		
 		if(mCurWeapon != null && !activate) {
 			mCurWeapon.Fire(false);
 		}

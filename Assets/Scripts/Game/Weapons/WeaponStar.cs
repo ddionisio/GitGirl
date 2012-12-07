@@ -54,13 +54,25 @@ public class WeaponStar : Weapon {
 		}
 	}
 	
+	protected override void OnReadyToFire() {
+		if(mCurStar != null) {
+			mCurStar.WeaponPrep();
+		}
+	}
+	
 	void PrepAStar() {
 		//mCurStar
 		if(mStars.Count > 0) {
 			mCurStar = mStars.Dequeue();
 			mCurStar.transform.parent = grabber.headAttach;
 			mCurStar.transform.localPosition = Vector3.zero;
-			mCurStar.WeaponPrep();
+			
+			if(isReadyToFire) {
+				mCurStar.WeaponPrep();
+			}
+			else {
+				mCurStar.WeaponRefresh();
+			}
 		}
 		else {
 			mCurStar = null;
