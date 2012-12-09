@@ -7,26 +7,30 @@ public class ItemWeapon : Entity, Entity.IListener {
 	protected override void Awake() {
 		base.Awake();
 		
-		mReticle = Reticle.Type.Grab;
+		ReadyForGrab();
 	}
 	
-	void OnGrabStart(PlayerGrabber grabber) {
+	void OnGrabStart(PlayerGrabberBase grabber) {
+		gameObject.layer = Main.layerIgnoreRaycast;
 	}
 	
-	void OnGrabDone(PlayerGrabber grabber) {
+	void OnGrabDone(PlayerGrabberBase grabber) {
 		grabber.Retract(true);
 	}
 	
-	void OnGrabRetractStart(PlayerGrabber grabber) {
+	void OnGrabRetractStart(PlayerGrabberBase grabber) {
 	}
 	
-	void OnGrabRetractEnd(PlayerGrabber grabber) {
+	void OnGrabRetractEnd(PlayerGrabberBase grabber) {
 		//make something happen
 		grabber.DetachGrab();
 		
 		Release();
 		
-		grabber.Equip(weapon);
+		PlayerGrabber pGrabber = grabber as PlayerGrabber;
+		if(pGrabber != null) {
+			pGrabber.Equip(weapon);
+		}
 	}
 	
 	public void OnEntityAct(Action act) {
@@ -43,6 +47,11 @@ public class ItemWeapon : Entity, Entity.IListener {
 	}
 	
 	public void OnEntitySpawnFinish() {
+		ReadyForGrab();
+	}
+	
+	void ReadyForGrab() {
+		gameObject.layer = Main.layerItem;
 		mReticle = Reticle.Type.Grab;
 	}
 }

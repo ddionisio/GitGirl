@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Player : Entity, Entity.IListener {
 	public delegate void ThrowCallback(Player player);
@@ -20,6 +21,11 @@ public class Player : Entity, Entity.IListener {
 	
 	public float deathDelay = 2.0f; //delay to bring game over menu up
 	
+	//auto grabbing stuff
+	public int maxAutoGrab = 5;
+	public Transform autoGrabHolder;
+	public PlayerAutoGrabber autoGrabTemplate;
+	
 	public ThrowCallback throwCallback=null;
 	
 	private PlayerController mController;
@@ -31,6 +37,8 @@ public class Player : Entity, Entity.IListener {
 	private bool mSceneDisable = false;
 	
 	private SceneLevel.LevelCheckpoint mCheckPoint = null;
+	
+	private Queue<PlayerAutoGrabber> mAutoGrabQueue;
 	
 	//only called by level scene
 	public void SetCheckpoint(SceneLevel.LevelCheckpoint checkpoint) {
@@ -49,6 +57,23 @@ public class Player : Entity, Entity.IListener {
 		}
 		
 		mController = GetComponent<PlayerController>();
+		
+		mAutoGrabQueue = new Queue<PlayerAutoGrabber>(maxAutoGrab);
+		for(int i = 0; i < maxAutoGrab; i++) {
+			PlayerAutoGrabber newGrabber = (PlayerAutoGrabber)Object.Instantiate(autoGrabTemplate);
+			Transform t = newGrabber.transform;
+			t.parent = autoGrabHolder;
+			t.localPosition = Vector3.zero;
+			t.localRotation = Quaternion.identity;
+			t.localScale = Vector3.one;
+			
+			//leave the first one active
+			if(i > 0) {
+				newGrabber.gameObject.SetActiveRecursively(false);
+			}
+			
+			mAutoGrabQueue.Enqueue(newGrabber);
+		}
 	}
 	
 	protected override void Start () {
@@ -86,21 +111,23 @@ public class Player : Entity, Entity.IListener {
 			| Main.layerMaskEnemyNoPlayerProjectile | Main.layerMaskProjectile;
 	}
 				
-	public void OnGrabStart() {
-		mController.enabled = false;
+	public void OnGrabStart(PlayerGrabberBase grabber) {
+		if(grabber is PlayerGrabber)
+			mController.enabled = false;
 	}
 	
-	public void OnGrabDone() {
-		mController.enabled = true;
+	public void OnGrabDone(PlayerGrabberBase grabber) {
+		if(grabber is PlayerGrabber)
+			mController.enabled = true;
 	}
 	
-	public void OnGrabRetractStart() {
+	public void OnGrabRetractStart(PlayerGrabberBase grabber) {
 	}
 	
-	public void OnGrabRetractEnd() {
+	public void OnGrabRetractEnd(PlayerGrabberBase grabber) {
 	}
 	
-	public void OnGrabThrow() {
+	public void OnGrabThrow(PlayerGrabberBase grabber) {
 		if(throwCallback != null) {
 			throwCallback(this);
 		}
@@ -114,6 +141,28 @@ public class Player : Entity, Entity.IListener {
 	
 	public int GetScore() {
 		return mPlayerStats != null ? mPlayerStats.score : 0;
+	}
+	
+	public void RefreshAutoGrabber() {
+		if(mAutoGrabQueue.Count > 0) {
+			PlayerAutoGrabber autoGrabber = mAutoGrabQueue.Peek();
+			
+			if(!autoGrabber.gameObject.active) {
+				autoGrabber.gameObject.SetActiveRecursively(true);
+				autoGrabber.Activate();
+			}
+			else if(autoGrabber.state != PlayerGrabberBase.State.None) {
+				//still in progress, move back and activate the next if it hasn't yet
+				mAutoGrabQueue.Dequeue();
+				mAutoGrabQueue.Enqueue(autoGrabber);
+				
+				autoGrabber = mAutoGrabQueue.Peek();
+				if(!autoGrabber.gameObject.active) {
+					autoGrabber.gameObject.SetActiveRecursively(true);
+					autoGrabber.Activate();
+				}
+			}
+		}
 	}
 	
 	///// internal

@@ -37,27 +37,28 @@ public class CreatureCommon : Entity, Entity.IListener {
 		base.OnEnable();
 	}
 	
-	//void OnGrabStart(PlayerGrabber grabber) {
-	//}
+	void OnGrabStart(PlayerGrabberBase grabber) {
+		gameObject.layer = Main.layerIgnoreRaycast;
+	}
 	
-	protected virtual void OnGrabDone(PlayerGrabber grabber) {
+	protected virtual void OnGrabDone(PlayerGrabberBase grabber) {
 		planetAttach.enabled = false;
 		grabber.Retract(true);
 		
 		action = Entity.Action.grabbed;
 	}
 	
-	protected virtual void OnGrabRetractStart(PlayerGrabber grabber) {
+	protected virtual void OnGrabRetractStart(PlayerGrabberBase grabber) {
 		//call proper state as 'grabbed'
 	}
 	
-	protected virtual void OnGrabRetractEnd(PlayerGrabber grabber) {
+	protected virtual void OnGrabRetractEnd(PlayerGrabberBase grabber) {
 		grabber.DetachGrab();
 		
 		planetAttach.enabled = true;
 		
 		//get eaten, let player know
-		grabber.thePlayer.AddScore(score);
+		grabber.player.AddScore(score);
 		
 		Release();
 	}
@@ -121,7 +122,7 @@ public class CreatureCommon : Entity, Entity.IListener {
 			planetAttach.applyGravity = true;
 						
 			if(!customLayer) {
-				gameObject.layer = Main.layerItem;
+				gameObject.layer = Main.layerAutoGrab;
 				mCollideLayerMask = 0;
 			}
 			

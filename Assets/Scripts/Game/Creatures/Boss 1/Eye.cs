@@ -15,18 +15,19 @@ public class Eye : EntityBase {
 		boss = null;
 	}
 	
-	void OnGrabStart(PlayerGrabber grabber) {
+	void OnGrabStart(PlayerGrabberBase grabber) {
+		gameObject.layer = Main.layerIgnoreRaycast;
 	}
 	
-	void OnGrabDone(PlayerGrabber grabber) {
+	void OnGrabDone(PlayerGrabberBase grabber) {
 		grabber.Retract(true);
 	}
 	
-	void OnGrabRetractStart(PlayerGrabber grabber) {
+	void OnGrabRetractStart(PlayerGrabberBase grabber) {
 	}
 	
-	void OnGrabRetractEnd(PlayerGrabber grabber) {
-		grabber.thePlayer.AddScore(score);
+	void OnGrabRetractEnd(PlayerGrabberBase grabber) {
+		grabber.player.AddScore(score);
 		
 		//make something happen
 		grabber.DetachGrab();

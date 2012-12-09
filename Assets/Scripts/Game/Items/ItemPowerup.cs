@@ -14,17 +14,18 @@ public class ItemPowerup : Entity, Entity.IListener {
 		base.Update();
 	}
 	
-	void OnGrabStart(PlayerGrabber grabber) {
+	void OnGrabStart(PlayerGrabberBase grabber) {
+		gameObject.layer = Main.layerIgnoreRaycast;
 	}
 	
-	void OnGrabDone(PlayerGrabber grabber) {
+	void OnGrabDone(PlayerGrabberBase grabber) {
 		grabber.Retract(true);
 	}
 	
-	void OnGrabRetractStart(PlayerGrabber grabber) {
+	void OnGrabRetractStart(PlayerGrabberBase grabber) {
 	}
 	
-	void OnGrabRetractEnd(PlayerGrabber grabber) {
+	void OnGrabRetractEnd(PlayerGrabberBase grabber) {
 		//make something happen
 		Transform t = grabber.DetachGrab();
 		

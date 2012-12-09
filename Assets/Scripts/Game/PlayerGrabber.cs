@@ -1,20 +1,8 @@
 using UnityEngine;
 using System.Collections;
 
-public class PlayerGrabber : MonoBehaviour, Entity.IListener {
-	public enum State {
-		None,
-		Grabbing,
-		Grabbed,
-		Retracting,
-		Retracted,
-		Holding //holding an object
-	}
-	
-	public Transform player;
-	
-	public Transform head;
-	public Transform headAttach; //attachment point
+public class PlayerGrabber : PlayerGrabberBase, Entity.IListener {
+	[SerializeField] Transform head;
 	
 	public string headClipIdle;
 	public string headClipGrab;
@@ -24,32 +12,15 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 	
 	public Transform neck;
 	
-	public float radius = 10.0f;
-	
 	public float lookAngleLimit = 90.0f;
-	
-	public float grabLenOfs = 0.0f;
-	public float grabDelay = 0.15f;
-	
+					
 	public Weapon[] weapons;
 	
 	//cache
-	private int mLayerMasksGrab;
-	
-	private Player mPlayer;
 	private tk2dAnimatedSprite mHeadSprite;
 	private tk2dSprite mNeckSprite;
 		
 	//stuff
-	private State mCurState = State.None;
-	
-	private float mGrabCurDelay = 0.0f;
-	
-	private Transform mGrabTarget = null;
-	
-	private bool mRetractIsAttached;
-	private Vector3 mGrabDest;
-	
 	private int mHeadClipIdleId;
 	private int mHeadClipGrabId;
 	private int mHeadClipHoldId;
@@ -60,22 +31,12 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 	
 	private Weapon mCurWeapon = null;
 	
-	public State state {
-		get {
-			return mCurState;
-		}
-	}
+	private int mLayerMasksGrab;
 	
-	public Player thePlayer {
+	public override Vector3 up {
 		get {
-			return mPlayer;
+			return head.up;
 		}
-	}
-	
-	//call within function OnGrabDone if you want to keep the target
-	public void Retract(bool attachGrabbedTarget) {
-		mRetractIsAttached = attachGrabbedTarget;
-		SwitchState(State.Retracting);
 	}
 	
 	public void Equip(Weapon.Type type) {
@@ -101,7 +62,7 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 	
 	//do something
 	public void Fire(bool down) {
-		if(mCurState == State.None) {
+		if(state == State.None) {
 			if(mCurWeapon != null) {
 				mCurWeapon.Fire(down);
 			}
@@ -135,34 +96,8 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 		}
 	}
 	
-	
 	//
 	//
-	
-	/// <summary>
-	/// You better know what to do with the grabbed item, parent is set to null.
-	/// e.g. you can move it back to a pool of some sort.
-	/// </summary>
-	/// <returns>
-	/// The detached object, parentless. :(
-	/// </returns>
-	public Transform DetachGrab() {
-		SwitchState(State.None);
-		
-		Transform ret = mGrabTarget;
-		if(ret != null) {
-			ret.parent = null;
-			
-			ret.SendMessage("OnGrabDetach", this, SendMessageOptions.DontRequireReceiver);
-		}
-		
-		mGrabTarget = null;
-		mRetractIsAttached = false;
-						
-		return ret;
-	}
-	
-	
 	
 	void HeadAnimComplete(tk2dAnimatedSprite sprite, int clipId) {
 		if(clipId == mHeadClipThrowId) {
@@ -170,16 +105,7 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 		}
 	}
 	
-	void OnEnable() {
-		foreach(Weapon weapon in weapons) {
-			if(weapon != mCurWeapon) {
-			}
-		}
-	}
-	
 	void Awake() {
-		mPlayer = player.GetComponent<Player>();
-		
 		mHeadSprite = head.GetComponent<tk2dAnimatedSprite>();
 		mHeadClipIdleId = mHeadSprite.GetClipIdByName(headClipIdle);
 		mHeadClipGrabId = mHeadSprite.GetClipIdByName(headClipGrab);
@@ -191,6 +117,8 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 		
 		mNeckSprite = neck.GetComponent<tk2dSprite>();
 		
+		neck.gameObject.SetActiveRecursively(false);
+		
 		foreach(Weapon weapon in weapons) {
 			weapon.Init(this);
 			weapon.gameObject.SetActiveRecursively(false);
@@ -198,12 +126,11 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 	}
 		
 	// Use this for initialization
-	void Start () {
+	protected override void Start () {
 		//detect planet to avoid grabbing into the ground
 		mLayerMasksGrab = Main.layerMaskEnemy | Main.layerMaskProjectile | Main.layerMaskItem | Main.layerMaskPlanet;
 		
-		//Input.mousePosition
-		SwitchState(State.None);
+		base.Start();
 	}
 	
 	void OrientHead(Vector2 dir, bool lockAngle) {
@@ -274,7 +201,7 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 		
 		PlayAnimThrow();
 		
-		mPlayer.OnGrabThrow();
+		player.OnGrabThrow(this);
 		t.SendMessage("OnGrabThrow", this, SendMessageOptions.DontRequireReceiver);
 	}
 	
@@ -330,81 +257,38 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 			SwitchState(isRetract ? State.Retracted : State.Grabbed);
 		}
 	}
-	
-	void SwitchState(State newState) {
-		mCurState = newState;
 		
+	protected override void SwitchState(State newState) {		
 		switch(newState) {
 		case State.None:
 			PlayAnimIdle();
 			break;
 			
 		case State.Grabbing:
-			mGrabCurDelay = 0.0f;
+			neck.gameObject.SetActiveRecursively(true);
 			
 			Main.instance.reticleManager.DeactivateAll(mGrabTarget);
-			
-			mPlayer.OnGrabStart();
-			if(mGrabTarget != null) {
-				mGrabTarget.SendMessage("OnGrabStart", this, SendMessageOptions.DontRequireReceiver);
-			}
 			
 			mHeadSprite.Play(mHeadClipGrabId);
 			break;
 			
 		case State.Grabbed:
 			Main.instance.reticleManager.DeactivateAll();
-			
-			mPlayer.OnGrabDone();
-			if(mGrabTarget != null) {
-				mGrabTarget.SendMessage("OnGrabDone", this, SendMessageOptions.DontRequireReceiver);
-			}
-			
-			//wait for action on grabbed target
 			break;
 			
 		case State.Retracting:
-			mGrabCurDelay = 0.0f;
-			
-			if(mGrabTarget != null) {
-				mGrabDest = mGrabTarget.position;
-				
-				//move grabbed object to attach point
-				if(mRetractIsAttached) {
-					mGrabTarget.parent = headAttach;
-					mGrabTarget.localPosition = new Vector3(0, 0, mGrabDest.z);
-					mGrabTarget.localScale = Vector3.one;
-					mGrabTarget.localRotation = Quaternion.identity;
-				}
-			}
-			else {
-				mGrabDest = transform.position;
-			}
-			
-			mPlayer.OnGrabRetractStart();
-			
-			if(mGrabTarget != null) {
-				mGrabTarget.SendMessage("OnGrabRetractStart", this, SendMessageOptions.DontRequireReceiver);
-			}
 			break;
 			
 		case State.Retracted:
-			mPlayer.OnGrabRetractEnd();
-			
-			if(mRetractIsAttached && mGrabTarget != null) { //don't care if grabbed is left alone
-				mGrabTarget.SendMessage("OnGrabRetractEnd", this, SendMessageOptions.DontRequireReceiver);
-			}
-			else {
-				mGrabTarget = null;
-			}
-			
-			SwitchState(State.None);
+			neck.gameObject.SetActiveRecursively(false);
 			break;
 		}
+		
+		base.SwitchState(newState);
 	}
 	
 	void Update () {
-		switch(mCurState) {
+		switch(state) {
 		case State.None:
 			LookAtMouse();
 			
@@ -429,6 +313,8 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 			GrabbingUpdate(true, true);
 			break;
 		}
+		
+		
 	}
 	
 	void OnUIModalActive() {
@@ -449,7 +335,7 @@ public class PlayerGrabber : MonoBehaviour, Entity.IListener {
 	//entity listener
 	
 	public void OnEntityAct(Entity.Action act) {
-		if(thePlayer.prevAction == Entity.Action.start) {
+		if(player.prevAction == Entity.Action.start) {
 			head.gameObject.active = true;
 			headAttach.gameObject.SetActiveRecursively(true);
 		}

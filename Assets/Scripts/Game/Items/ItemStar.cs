@@ -65,7 +65,7 @@ public class ItemStar : Entity, Entity.IListener {
 	}
 	
 	//use by weapon star and grab throw
-	public void Throw(PlayerGrabber grabber, bool putInWorld) {
+	public void Throw(PlayerGrabberBase grabber, bool putInWorld) {
 		if(putInWorld) {
 			_PutInWorld();
 		}
@@ -80,15 +80,17 @@ public class ItemStar : Entity, Entity.IListener {
 		mCollideLayerMask = Main.layerMaskEnemyComplex;
 		
 		//compute velocity in planet space
-		Vector2 dir = planetAttach.ConvertToPlanetDir(grabber.head.up);
+		Vector2 dir = planetAttach.ConvertToPlanetDir(grabber.up);
+		
+		Player player = grabber.player;
 		
 		Vector2 throwVel = dir*throwSpeed;
-		if(Mathf.Sign(dir.x) == Mathf.Sign(grabber.thePlayer.planetAttach.planetDir.x)) {
-			throwVel += grabber.thePlayer.planetAttach.velocity;
+		if(Mathf.Sign(dir.x) == Mathf.Sign(player.planetAttach.planetDir.x)) {
+			throwVel += player.planetAttach.velocity;
 		}
 		
-		if(grabber.thePlayer.planetAttach.GetCurYVel() > 0) {
-			throwVel.y += grabber.thePlayer.planetAttach.GetCurYVel();
+		if(player.planetAttach.GetCurYVel() > 0) {
+			throwVel.y += player.planetAttach.GetCurYVel();
 		}
 		
 		planetAttach.velocity = throwVel;
@@ -207,29 +209,31 @@ public class ItemStar : Entity, Entity.IListener {
 		action = Entity.Action.idle;
 	}
 			
-	void OnGrabStart(PlayerGrabber grabber) {
+	void OnGrabStart(PlayerGrabberBase grabber) {
 		_Start();
+		
+		gameObject.layer = Main.layerIgnoreRaycast;
 	}
 	
-	void OnGrabDone(PlayerGrabber grabber) {
+	void OnGrabDone(PlayerGrabberBase grabber) {
 		_Prep();
 		grabber.Retract(true);
 	}
 	
-	void OnGrabRetractStart(PlayerGrabber grabber) {
+	void OnGrabRetractStart(PlayerGrabberBase grabber) {
 		//call proper state as 'grabbed'
 	}
 	
-	void OnGrabRetractEnd(PlayerGrabber grabber) {
+	void OnGrabRetractEnd(PlayerGrabberBase grabber) {
 		//get eaten
 	}
 	
-	void OnGrabDetach(PlayerGrabber grabber) {
+	void OnGrabDetach(PlayerGrabberBase grabber) {
 		//put back in the world
 		_PutInWorld();
 	}
 	
-	void OnGrabThrow(PlayerGrabber grabber) {
+	void OnGrabThrow(PlayerGrabberBase grabber) {
 		Throw(grabber, false);
 	}
 	

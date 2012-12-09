@@ -53,7 +53,7 @@ public class PlayerController : MonoBehaviour {
 			
 			planetAttach.accel = Vector2.zero;
 		}
-		else {
+		else if(mPlayer.action == Entity.Action.jump) {
 			planetAttach.accel.x = xS*airControlAccel;
 		}
 		

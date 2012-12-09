@@ -41,26 +41,28 @@ public class ItemHeart : Entity, Entity.IListener {
 		base.Update();
 	}
 	
-	void OnGrabStart(PlayerGrabber grabber) {
+	void OnGrabStart(PlayerGrabberBase grabber) {
+		gameObject.layer = Main.layerIgnoreRaycast;
+		
 		if(stateCallback != null) {
 			stateCallback(this, State.Grabbed);
 		}
 	}
 	
-	void OnGrabDone(PlayerGrabber grabber) {
-		if(grabber.thePlayer.action == Entity.Action.die) {
+	void OnGrabDone(PlayerGrabberBase grabber) {
+		if(grabber.player.action == Entity.Action.die) {
 		}
 		else {
-			grabber.thePlayer.stats.ApplyDamage(-1);
+			grabber.player.stats.ApplyDamage(-1);
 		}
 		
 		grabber.Retract(true);
 	}
 	
-	void OnGrabRetractStart(PlayerGrabber grabber) {
+	void OnGrabRetractStart(PlayerGrabberBase grabber) {
 	}
 	
-	void OnGrabRetractEnd(PlayerGrabber grabber) {
+	void OnGrabRetractEnd(PlayerGrabberBase grabber) {
 		//make something happen
 		grabber.DetachGrab();
 		

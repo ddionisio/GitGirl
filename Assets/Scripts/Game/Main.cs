@@ -13,6 +13,7 @@ public class Main : MonoBehaviour {
 	public static int layerPlayerProjectile;
 	public static int layerEnemyNoPlayerProjectile;
 	public static int layerPlanet;
+	public static int layerAutoGrab;
 	
 	public static int layerMaskPlayer;
 	public static int layerMaskEnemy;
@@ -22,6 +23,7 @@ public class Main : MonoBehaviour {
 	public static int layerMaskPlayerProjectile;
 	public static int layerMaskEnemyNoPlayerProjectile;
 	public static int layerMaskPlanet;
+	public static int layerMaskAutoGrab;
 	
 	public TextAsset stringAsset;
 	
@@ -75,6 +77,7 @@ public class Main : MonoBehaviour {
 		layerPlayerProjectile = LayerMask.NameToLayer("PlayerProjectile");
 		layerEnemyNoPlayerProjectile = LayerMask.NameToLayer("EnemyNoPlayerProjectile");
 		layerPlanet = LayerMask.NameToLayer("Planet");
+		layerAutoGrab = LayerMask.NameToLayer("AutoGrab");
 		
 		layerMaskPlayer = 1<<layerPlayer;
 		layerMaskEnemy = 1<<layerEnemy;
@@ -84,6 +87,7 @@ public class Main : MonoBehaviour {
 		layerMaskPlayerProjectile = 1<<layerPlayerProjectile;
 		layerMaskEnemyNoPlayerProjectile = 1<<layerEnemyNoPlayerProjectile;
 		layerMaskPlanet = 1<<layerPlanet;
+		layerMaskAutoGrab = 1<<layerAutoGrab;
 		
 		DontDestroyOnLoad(gameObject);
 		

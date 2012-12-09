@@ -2,6 +2,9 @@ using UnityEngine;
 using System.Collections;
 
 public class Entity : EntityBase {
+	public const float collisionCastZ = -1000.0f;
+	public const float collisionDistance = 2000.0f;
+	
 	public enum Action {
 		idle,
 		start, //used by scene for player
@@ -38,11 +41,8 @@ public class Entity : EntityBase {
 	
 	public float spawnDelay = 1.0f;
 	
-	protected int mCollideLayerMask = 0; //0 is none, only initialize on start
-			
-	private const float mCollisionCastZ = -1000.0f;
-	private const float mCollisionDistance = 2000.0f;
-	
+	protected int mCollideLayerMask = 0; //0 is none, only initialize on start	
+		
 	private Action mCurAct = Action.NumActions;
 	private Action mPrevAct = Action.NumActions;
 	
@@ -243,8 +243,8 @@ public class Entity : EntityBase {
 				float radius = mPlanetAttach.radius;
 				RaycastHit hit;
 				//TODO: send RaycastHit
-				Vector3 castPos = transform.position; castPos.z = mCollisionCastZ;
-				if(Physics.SphereCast(castPos, radius, new Vector3(0,0,1.0f), out hit, mCollisionDistance, mCollideLayerMask)) {
+				Vector3 castPos = transform.position; castPos.z = collisionCastZ;
+				if(Physics.SphereCast(castPos, radius, Vector3.forward, out hit, collisionDistance, mCollideLayerMask)) {
 					Entity e = hit.transform.GetComponent<Entity>();
 					if(e != null) {
 						foreach(IListener l in mListeners) {
