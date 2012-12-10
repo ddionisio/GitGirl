@@ -251,7 +251,7 @@ public class ItemStar : Entity, Entity.IListener {
 	public void OnEntityInvulnerable(bool yes) {
 	}
 	
-	public void OnEntityCollide(Entity other, bool youAreReceiver) {
+	public void OnEntityCollide(Entity other, RaycastHit hit, bool youAreReceiver) {
 		//TODO: properly bounce off from their collision, really should pass in the ray hit data
 		if((!youAreReceiver || mCollideLayerMask == Main.layerMaskEnemyComplex)
 			&& mCurBounce < numBounce && mLifeState == LifeState.Thrown) {

@@ -44,18 +44,6 @@ public class SpriteEnemyCommonController : SpriteEntityController {
 		}
 	}
 	
-	public override void OnEntityInvulnerable(bool yes) {
-		base.OnEntityInvulnerable(yes);
-	}
-	
-	public override void OnEntityCollide(Entity other, bool youAreReceiver) {
-		base.OnEntityCollide(other, youAreReceiver);
-	}
-	
-	public override void OnEntitySpawnFinish() {
-		base.OnEntitySpawnFinish();
-	}
-	
 	void OnPlanetLand(PlanetAttach pa) {
 		//perform proper animation
 		if(creature != null) {

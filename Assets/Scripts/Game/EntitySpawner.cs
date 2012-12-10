@@ -7,8 +7,11 @@ public class EntitySpawner : MonoBehaviour {
 	public string type;
 	
 	//these are only if there's a planet attacher
+	public bool useUpVector = false;
+	
 	public float angleMin; //starting from Vector2.up
 	public float angleMax;
+	
 	public float speedMin;
 	public float speedMax;
 	public float radiusSpread;
@@ -102,17 +105,47 @@ public class EntitySpawner : MonoBehaviour {
 			pos.z = spawnPos.z;
 			t.position = pos;
 			
-			PlanetAttach pa = t.GetComponentInChildren<PlanetAttach>();
-			if(pa != null) {
-				Vector2 dir = Util.Vector2DRot(Vector2.up, Random.Range(angleMin, angleMax)*Mathf.Deg2Rad);
-				if(horizontalOnly) {
-					dir.x = Mathf.Sign(dir.x);
-					dir.y = 0;
+			float angle = angleMin != angleMax ? Random.Range(angleMin, angleMax)*Mathf.Deg2Rad : angleMin;
+			float speed = speedMin != speedMax ? Random.Range(speedMin, speedMax) : speedMin;
+			
+			ProjBullet proj = t.GetComponentInChildren<ProjBullet>();
+			if(proj != null) {
+				if(useUpVector) {
+					Vector2 u = transform.up;
+					proj.dir = u;
+				}
+				else {
+					proj.dir = Vector2.up;
 				}
 				
-				pa.velocity = dir*Random.Range(speedMin, speedMax);
-				pa.RefreshPos();
-				pa.ResetCurYVel();
+				if(angle != 0) {
+					proj.dir = Util.Vector2DRot(proj.dir, angle);
+				}
+				
+				proj.speed = speed;
+			}
+			else {
+				PlanetAttach pa = t.GetComponentInChildren<PlanetAttach>();
+				if(pa != null) {
+					Vector2 dir;
+					
+					if(useUpVector) {
+						Vector2 u = transform.up;
+						dir = pa.ConvertToPlanetDir(angle != 0 ? Util.Vector2DRot(u, angle) : u);
+					}
+					else {
+						dir = angle != 0 ? Util.Vector2DRot(Vector2.up, angle) : Vector2.up;
+					}
+					
+					if(horizontalOnly) {
+						dir.x = Mathf.Sign(dir.x);
+						dir.y = 0;
+					}
+					
+					pa.velocity = dir*speed;
+					pa.RefreshPos();
+					pa.ResetCurYVel();
+				}
 			}
 			
 			ChangeState(State.SpawnWait);

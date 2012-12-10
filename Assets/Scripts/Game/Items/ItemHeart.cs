@@ -35,12 +35,7 @@ public class ItemHeart : Entity, Entity.IListener {
 	protected override void Awake() {
 		base.Awake();
 	}
-	
-	// Update is called once per frame
-	protected override void Update () {
-		base.Update();
-	}
-	
+		
 	void OnGrabStart(PlayerGrabberBase grabber) {
 		gameObject.layer = Main.layerIgnoreRaycast;
 		
@@ -83,7 +78,7 @@ public class ItemHeart : Entity, Entity.IListener {
 	public void OnEntityInvulnerable(bool yes) {
 	}
 	
-	public void OnEntityCollide(Entity other, bool youAreReceiver) {
+	public void OnEntityCollide(Entity other, RaycastHit hit, bool youAreReceiver) {
 	}
 	
 	public void OnEntitySpawnFinish() {

@@ -13,7 +13,7 @@ public class PlanetAttachStatic : MonoBehaviour {
 	
 	private PlanetBody mPlanet;
 	
-	public float radius;
+	public float radius = 0;
 	
 	[SerializeField]
 	tk2dBaseSprite orientSprite = null;
@@ -133,7 +133,7 @@ public class PlanetAttachStatic : MonoBehaviour {
 	
 	protected virtual void Awake() {
 		SphereCollider sc = GetComponentInChildren<SphereCollider>();
-		if(sc != null) {
+		if(sc != null && radius == 0) {
 			radius = sc.radius;
 		}
 				

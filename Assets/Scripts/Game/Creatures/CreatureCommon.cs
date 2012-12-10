@@ -39,13 +39,12 @@ public class CreatureCommon : Entity, Entity.IListener {
 	
 	void OnGrabStart(PlayerGrabberBase grabber) {
 		gameObject.layer = Main.layerIgnoreRaycast;
+		action = Entity.Action.grabbed; //prevent from reviving
 	}
 	
 	protected virtual void OnGrabDone(PlayerGrabberBase grabber) {
 		planetAttach.enabled = false;
 		grabber.Retract(true);
-		
-		action = Entity.Action.grabbed;
 	}
 	
 	protected virtual void OnGrabRetractStart(PlayerGrabberBase grabber) {
@@ -187,27 +186,29 @@ public class CreatureCommon : Entity, Entity.IListener {
 		}
 	}
 	
-	public void OnEntityCollide(Entity other, bool youAreReceiver) {
-		GameObject go = other.gameObject;
-		bool doIt = isComplex ? !youAreReceiver : youAreReceiver;
-		doIt = doIt && go.layer == Main.layerPlayerProjectile && !FlagsCheck(Entity.Flag.Invulnerable);
-		
-		if(doIt) {
-			if(stats != null && other.stats != null) {
-				stats.ApplyDamage(other.stats);
-				if(stats.curHP == 0) {
-					if(stunDelay > 0) {
-						action = Entity.Action.stunned;
+	public virtual void OnEntityCollide(Entity other, RaycastHit hit, bool youAreReceiver) {
+		if(other != null) {
+			GameObject go = other.gameObject;
+			bool doIt = isComplex ? !youAreReceiver : youAreReceiver;
+			doIt = doIt && go.layer == Main.layerPlayerProjectile && !FlagsCheck(Entity.Flag.Invulnerable);
+			
+			if(doIt) {
+				if(stats != null && other.stats != null) {
+					stats.ApplyDamage(other.stats);
+					if(stats.curHP == 0) {
+						if(stunDelay > 0) {
+							action = Entity.Action.stunned;
+						}
+						else {
+							action = Entity.Action.die;
+						}
 					}
 					else {
-						action = Entity.Action.die;
+						action = Entity.Action.hurt;
 					}
 				}
-				else {
-					action = Entity.Action.hurt;
-				}
 			}
-		}
+		} //special case for non-entities
 	}
 	
 	public virtual void OnEntitySpawnFinish() {

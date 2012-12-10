@@ -70,7 +70,7 @@ public class SpriteEntityController : MonoBehaviour, Entity.IListener {
 		}
 	}
 	
-	public virtual void OnEntityCollide(Entity other, bool youAreReceiver) {
+	public virtual void OnEntityCollide(Entity other, RaycastHit hit, bool youAreReceiver) {
 	}
 	
 	public virtual void OnEntitySpawnFinish() {

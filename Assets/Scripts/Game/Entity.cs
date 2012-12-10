@@ -33,7 +33,10 @@ public class Entity : EntityBase {
 	public interface IListener {
 		void OnEntityAct(Action act);
 		void OnEntityInvulnerable(bool yes);
-		void OnEntityCollide(Entity other, bool youAreReceiver);
+		
+		//youAreReceiver=true is when you cast the ray, other=null for non-entities
+		void OnEntityCollide(Entity other, RaycastHit hit, bool youAreReceiver);
+		
 		void OnEntitySpawnFinish();
 	}
 	
@@ -98,6 +101,12 @@ public class Entity : EntityBase {
 	public string aiCurState {
 		get {
 			return mAICurState;
+		}
+	}
+	
+	public bool aiActive {
+		get {
+			return mAIStateInstance != null;
 		}
 	}
 	
@@ -219,7 +228,7 @@ public class Entity : EntityBase {
 		action = sceneStartAction;
 	}
 	
-	protected virtual void Update() {
+	void Update() {
 		switch(mCurAct) {
 		case Action.NumActions:
 			//why are we here?
@@ -242,18 +251,18 @@ public class Entity : EntityBase {
 			if(mListeners.Length > 0 && mCollideLayerMask > 0 && mPlanetAttach != null) {
 				float radius = mPlanetAttach.radius;
 				RaycastHit hit;
-				//TODO: send RaycastHit
 				Vector3 castPos = transform.position; castPos.z = collisionCastZ;
 				if(Physics.SphereCast(castPos, radius, Vector3.forward, out hit, collisionDistance, mCollideLayerMask)) {
 					Entity e = hit.transform.GetComponent<Entity>();
+					
+					foreach(IListener l in mListeners) {
+						l.OnEntityCollide(e, hit, true);
+					}
+					
 					if(e != null) {
-						foreach(IListener l in mListeners) {
-							l.OnEntityCollide(e, true);
-						}
-						
 						//tell the other receiving end
 						foreach(IListener lOther in e.mListeners) {
-							lOther.OnEntityCollide(this, false);
+							lOther.OnEntityCollide(this, hit, false);
 						}
 					}
 				}

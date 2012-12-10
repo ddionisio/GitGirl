@@ -2,11 +2,22 @@ using UnityEngine;
 using System.Collections;
 
 public class UpDirToPlayer : MonoBehaviour {
+	//make sure to set the initial up dir
+	[SerializeField] bool isLockAngle = false;
+	[SerializeField] float lockAngle;
 	
 	private Transform mPlayer = null;
 	
+	private Vector2 mUp;
+	
 	void OnDestroy() {
 		mPlayer = null;
+	}
+	
+	void Awake() {
+		if(isLockAngle) {
+			mUp = transform.up;
+		}
 	}
 	
 	// Use this for initialization
@@ -23,7 +34,14 @@ public class UpDirToPlayer : MonoBehaviour {
 			}
 		}
 		else {
-			transform.up = (mPlayer.position - transform.position).normalized;
+			if(isLockAngle) {
+				Vector2 dir = (mPlayer.position - transform.position).normalized;
+				Util.Vector2DDirCap(mUp, ref dir, lockAngle);
+				transform.rotation = Quaternion.FromToRotation(transform.up, dir) * transform.rotation;
+			}
+			else {
+				transform.up = (mPlayer.position - transform.position).normalized;
+			}
 		}
 	}
 }

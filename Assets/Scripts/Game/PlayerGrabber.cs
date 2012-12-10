@@ -140,15 +140,9 @@ public class PlayerGrabber : PlayerGrabberBase, Entity.IListener {
 	void OrientHead(Vector2 dir, bool lockAngle) {
 		Vector2 playerUp = player.transform.up;
 		
-		float side = Util.Vector2DCross(playerUp, dir) < 0 ? -1 : 1;
-		
-		float angle = Mathf.Acos(Vector2.Dot(playerUp, dir));
-		
-		float limitAngle = lookAngleLimit*Mathf.Deg2Rad;
-		
-		if(lockAngle && angle > limitAngle) {
-			dir = Util.Vector2DRot(playerUp, -side*limitAngle);
-		}
+		float side = lockAngle ? 
+			Util.Vector2DDirCap(playerUp, ref dir, lookAngleLimit)
+			: Util.CheckSideSign(playerUp, dir);
 		
 		Vector3 headScale = mHeadSprite.scale;
 		headScale.x = side*Mathf.Abs(headScale.x);
@@ -362,7 +356,7 @@ public class PlayerGrabber : PlayerGrabberBase, Entity.IListener {
 	public void OnEntityInvulnerable(bool yes) {
 	}
 	
-	public void OnEntityCollide(Entity other, bool youAreReceiver) {
+	public void OnEntityCollide(Entity other, RaycastHit hit, bool youAreReceiver) {
 	}
 	
 	public void OnEntitySpawnFinish() {

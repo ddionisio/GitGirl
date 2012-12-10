@@ -246,32 +246,36 @@ public class Player : Entity, Entity.IListener {
 		}
 	}
 	
-	public void OnEntityCollide(Entity other, bool youAreReceiver) {
-		if(youAreReceiver && other.CanHarmPlayer()) {
-			stats.ApplyDamage(other.stats);
-			if(stats.curHP == 0) {
-				//dead!
-				action = Entity.Action.die;
-				
-				planetAttach.ResetMotion();
-			}
-			else {
-				//get hurt
-				action = Entity.Action.hurt;
-				
-				//knock back
-				switch(planetAttach.CheckSide(other.planetAttach)) {
-				case Util.Side.Left:
-				case Util.Side.None:
-					planetAttach.velocity = new Vector2(hurtSpeed, 0);
-					break;
-				case Util.Side.Right:
-					planetAttach.velocity = new Vector2(-hurtSpeed, 0);
-					break;
+	public void OnEntityCollide(Entity other, RaycastHit hit, bool youAreReceiver) {
+		if(other != null) {
+			if(youAreReceiver && other.CanHarmPlayer()) {
+				stats.ApplyDamage(other.stats);
+				if(stats.curHP == 0) {
+					//dead!
+					action = Entity.Action.die;
+					
+					planetAttach.ResetMotion();
 				}
-				
-				planetAttach.Jump(hurtJumpSpeed, false);
+				else {
+					//get hurt
+					action = Entity.Action.hurt;
+					
+					//knock back
+					switch(planetAttach.CheckSide(other.planetAttach)) {
+					case Util.Side.Left:
+					case Util.Side.None:
+						planetAttach.velocity = new Vector2(hurtSpeed, 0);
+						break;
+					case Util.Side.Right:
+						planetAttach.velocity = new Vector2(-hurtSpeed, 0);
+						break;
+					}
+					
+					planetAttach.Jump(hurtJumpSpeed, false);
+				}
 			}
+		}
+		else { //TODO: something for platform, etc.
 		}
 	}
 	
