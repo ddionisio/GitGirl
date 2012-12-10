@@ -19,8 +19,8 @@ public class ItemHeart : Entity, Entity.IListener {
 				stateCallback(this, State.Active);
 			}
 			
-			gameObject.layer = Main.layerItem;
-			mReticle = Reticle.Type.Eat;
+			gameObject.layer = Main.layerAutoGrab;
+			//mReticle = Reticle.Type.Eat;
 		}
 		else {
 			if(stateCallback != null) {
@@ -28,7 +28,7 @@ public class ItemHeart : Entity, Entity.IListener {
 			}
 			
 			gameObject.layer = Main.layerIgnoreRaycast;
-			mReticle = Reticle.Type.NumType;
+			//mReticle = Reticle.Type.NumType;
 		}
 	}
 

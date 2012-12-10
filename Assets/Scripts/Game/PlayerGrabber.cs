@@ -39,6 +39,10 @@ public class PlayerGrabber : PlayerGrabberBase, Entity.IListener {
 		}
 	}
 	
+	public tk2dAnimatedSprite headSprite {
+		get { return mHeadSprite; }
+	}
+	
 	public void Equip(Weapon.Type type) {
 		Expel(); //just in case
 		
@@ -349,6 +353,8 @@ public class PlayerGrabber : PlayerGrabberBase, Entity.IListener {
 		case Entity.Action.die:
 			neck.gameObject.SetActiveRecursively(false);
 			head.gameObject.SetActiveRecursively(false);
+			
+			Expel();
 			break;
 		}
 	}

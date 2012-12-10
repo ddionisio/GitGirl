@@ -5,6 +5,9 @@ using System.Collections.Generic;
 public class WeaponStar : Weapon {
 	public string template = "star"; //make sure it's in the entity manager
 	
+	public Transform[] braids;
+	public Transform[] braidAttaches;
+	
 	private Queue<ItemStar> mStars;
 	private ItemStar mCurStar;
 	
@@ -13,9 +16,14 @@ public class WeaponStar : Weapon {
 	}
 	
 	protected override void OnEquip() {
+		transform.localScale = Vector3.one;
+		
 		for(int i = 0; i < maxAmmo; i++) {
-			Transform t = EntityManager.instance.Spawn(template, "starAmmo", transform, null, false);
+			Transform parent = i == 0 ? transform : braidAttaches[braidAttaches.Length-i];
+			
+			Transform t = EntityManager.instance.Spawn(template, "starAmmo", parent, null, false);
 			ItemStar star = t.GetComponent<ItemStar>();
+			star.glowSprite.gameObject.active = false;
 			star.isAmmo = true;
 			mStars.Enqueue(star);
 		}
@@ -66,12 +74,19 @@ public class WeaponStar : Weapon {
 			mCurStar = mStars.Dequeue();
 			mCurStar.transform.parent = grabber.headAttach;
 			mCurStar.transform.localPosition = Vector3.zero;
+			mCurStar.transform.localScale = Vector3.one;
+			
+			mCurStar.glowSprite.gameObject.active = true;
 			
 			if(isReadyToFire) {
 				mCurStar.WeaponPrep();
 			}
 			else {
 				mCurStar.WeaponRefresh();
+			}
+			
+			if(mStars.Count < braids.Length) {
+				braids[mStars.Count].gameObject.SetActiveRecursively(false);
 			}
 		}
 		else {
@@ -90,6 +105,11 @@ public class WeaponStar : Weapon {
 	
 	// Update is called once per frame
 	void Update () {
-	
+		float sx = grabber.headSprite.scale.x;
+		if(transform.localScale.x != sx) {
+			Vector3 s = Vector3.one;
+			s.x = sx;
+			transform.localScale = s;
+		}
 	}
 }
